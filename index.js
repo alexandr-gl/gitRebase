@@ -8,29 +8,58 @@ import {
   TextInput,
   Image,
   Modal,
+  AsyncStorage,
 } from 'react-native';
 import styles from './style';
 import BackArrow from '../../../../assets/images/BackArrow.png';
 import ModalCam from '../../../Common/containers/Camera';
-import Gallery from '../../../Common/containers/Camera/Gallery';
+import ModalGallery from '../../../Common/containers/Camera/Gallery';
 import GalleryIco from '../../../../assets/images/PhoneGallery.png';
 import connect from './connect';
+import BackArrowIco from '../../../../assets/images/ArrowBack.png';
 
 class EditUserProfile extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
       camVisible: false,
+      galVisible: false,
+      choosenAvatar: null,
     };
     this.renderCamera = this.renderCamera.bind(this);
     this.renderModalCam = this.renderModalCam.bind(this);
+    this.getUserInfo = this.getUserInfo.bind(this);
   }
+
+  componentDidMount() {
+    // let userData = this.getUserData()
+  }
+
+  // getUserData = async() => {
+  //   try {
+  //     const value = await AsyncStorage.getItem('userData');
+  //     if (value !== null) {
+  //       // We have data!!
+  //       console.log('&&&&&>>>>>>>', value);
+  //     }
+  //    } catch (error) {
+  //      // Error retrieving data
+  //    }
+  // }
 
   renderModalCam() {
     const { camVisible } = this.state;
     this.setState({
       camVisible: !camVisible,
     });
+  }
+
+  captureImage = (photo, type) => {
+    const { camVisible } = this.state;
+    console.log('Photo >>>', photo);
+    if (type) {
+      this.setState({ camVisible: !camVisible });
+    }
   }
 
   renderGallery = () => {
@@ -43,6 +72,16 @@ class EditUserProfile extends React.Component {
         />
       </TouchableOpacity>
     );
+  }
+
+
+  toggleGallery = () => {
+    const { galVisible, camVisible } = this.state;
+    console.log('Toggle gallery>>>>', galVisible);
+    this.setState({
+      galVisible: !galVisible,
+      camVisible: !camVisible,
+    });
   }
 
   renderCamera() {
@@ -64,6 +103,44 @@ class EditUserProfile extends React.Component {
         />
       </Modal>
     );
+  }
+
+  modalGallery = () => {
+    const { galVisible } = this.state;
+    return (
+      <Modal
+        hardwareAccelerated
+        animationType="slide"
+        transparent={false}
+        visible={galVisible}
+      >
+        <View style={{ flex: 1 }}>
+          <View style={styles.galleryHeader}>
+            <TouchableOpacity onPress={() => {
+              this.setState({
+                galVisible: false,
+                camVisible: true,
+              });
+            }}
+            >
+              <Image style={styles.dialogBack} source={BackArrowIco} />
+            </TouchableOpacity>
+            <Text style={styles.galleryHeaderText}>Choose photo</Text>
+            <View style={styles.fakeView} />
+          </View>
+          <ModalGallery onPickImage={this.onPickImage} />
+        </View>
+      </Modal>
+    );
+  }
+
+  onPickImage = (image) => {
+    console.log('Wanna see image', image);
+    this.setState({
+      camVisible: false,
+      galVisible: false,
+      choosenAvatar: image,
+    });
   }
 
   static navigationOptions = ({ navigation }) => {
@@ -98,12 +175,15 @@ class EditUserProfile extends React.Component {
     return (
       <ScrollView style={styles.mainContainer}>
       {this.renderCamera()}
+      {this.modalGallery()}
         <View style={styles.changePhotoContainer}>
           <TouchableOpacity
             style={styles.changePhoto}
             onPress={this.renderModalCam}
           >
-            <View style={styles.changePhotoPic}></View>
+            <View style={styles.changePhotoPic}>
+
+            </View>
             <Text style={styles.changePhotoText}>Change profile photo</Text>
           </TouchableOpacity>
         </View>
